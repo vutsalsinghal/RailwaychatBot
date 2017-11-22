@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+ {% block title_html %}
+  RailwayBot
+ {% endblock %}
+
+ {% block page_css %}
+
+ {% endblock %}
+
+ {% block article_content %}
+  <div class="section" id="index-banner">
+    <div class="container">
+      <br><br>
+      <div class="row center">
+        {% if user.is_authenticated %}
+          <h2 class="amber-text">Hi {{ request.user | title }}</h2>
+        {% else %}
+          <h2 class="amber-text">Hi There</h2>
+        {% endif %}
+        <br>
+        <h5 class='header green-text'>Welcome To Safe House For All Your Precious Passwords</h5>
+        <h5 class="header col s12">A <a href="https://www.djangoproject.com" class="teal-text" title="https://www.djangoproject.com" target="_blank">Django</a> powered responsive web app based on Material Design</h5>
+        <br>
+      </div>
+      <div class="row center">
+        <a id="download-button" class="btn-large waves-effect waves-light red accent-4 modal-trigger" href="#modal1" data-target="modal1">About</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Structure -->
+<div class="container">
+   <div class="section">
+     <div id="modal1" class="modal font_ubuntu">
+       <div class="modal-content cyan darken-3">
+           <div class="card-content white-text">
+             <h4>About</h4>
+              <p>You can ask the chatbot question like 'What are the trains between station A and B tomorrow' or 'What is the live status of Train A which started
+              yesterday' or 'PNR status of 1234567890' and so on. Your query can contain either train/station name or code/number.</p>
+           </div>
+       </div>
+     </div>
+   </div>
+ </div>
+  <!--Modal structure ends-->
+ {% endblock %}

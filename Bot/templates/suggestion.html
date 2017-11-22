@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+ {% block title_html %}
+   Suggestion
+ {% endblock %}
+
+ {% block h1 %}
+  Suggestion
+ {% endblock %}
+
+ {% block article_content %}
+ <div class="section">
+   <div class="container">
+     {% if sent %}
+        <br><br><br?>
+        <h3 class="center">Thank You For Your Valuable Suggestion!</h3>
+        <script type="text/javascript">
+          setTimeout(function() {
+            window.location.href = "/";
+          }, 3000);
+        </script>
+        <br>
+     {% else %}
+     <form method="POST" class="font_roboto_mono">
+       {% csrf_token %}
+       <table>
+         <div clas="section">
+           <div class="container">
+             <div class="row">      
+              <div class="col l12 s12 m6">
+                <div class="card grey hoverable lighten-4 ">
+                  <div class="card-content black-text">
+                    <div class="row">
+                      <div class="input-field col l12 m12 s12">
+                        <i class="material-icons prefix">format_list_bulleted</i>
+                        <label for="petition_desc">Suggestion</label>
+                        {{ form.comment }}
+                      </div>
+                    </div>
+                    <button class="btn-floating btn-large hoverable right waves-effect waves-light red" type="submit" name="action"><i class="material-icons right">send</i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+           </div>
+         </div>
+       </table>
+       <br>
+     </form>
+     {% endif %}
+   </div>
+ </div>
+ {% endblock %}

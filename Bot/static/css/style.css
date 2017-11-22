@@ -1,0 +1,28 @@
+.portfolio-item {
+    margin-bottom: 25px;
+}
+
+p {
+    font-size: 16px;
+    line-height: 27px;
+    color: #666666;
+}
+
+.fb-bg {
+background-color: #3B5998;
+}
+.tw-bg {
+background-color: #55ACEE;
+}
+.gplus-bg {
+background-color: #DD4B39;
+}
+
+footer.page-footer a {
+line-height: 25px;
+}
+
+footer.page-footer a {
+color: #fff;
+font-size: 15px;
+}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title_html %}
+  Email Exists
+{% endblock %}
+
+{% block h1 %}
+ Email Exists
+{% endblock %}
+
+{% block article_content %}
+ <div class="section">
+   <div class="container">
+     <br><br><h3>Looks like this is a registered email ID. Please try another!</h3><br><br>
+     <script type="text/javascript">
+       setTimeout(function() {
+         window.location.href = "{% url 'create_user' %}";
+       }, 5000);
+     </script>
+     <br><br>
+   </div>
+ </div>
+{% endblock %}

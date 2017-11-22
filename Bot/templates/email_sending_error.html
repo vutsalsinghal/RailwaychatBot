@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title_html %}
+  Email Sending Error
+{% endblock %}
+
+{% block h1 %}
+ Email Sending Error
+{% endblock %}
+
+{% block article_content %}
+ <div class="section">
+   <div class="container">
+     <br><br><h3>Please re-register and try again after sometime!</h3><br><br>
+     <script type="text/javascript">
+       setTimeout(function() {
+         window.location.href = "{% url 'create_user' %}";
+       }, 10000);
+     </script>
+     <br><br>
+   </div>
+ </div>
+{% endblock %}

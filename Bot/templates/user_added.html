@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+ {% block h1 %}
+  User Added
+ {% endblock %}
+
+ {% block article_content %}
+ <div class="container">
+   <div class="section">
+     <h2>Please Confirm Your Email ID{% if tsa_enabled %} and Phone Number{% endif %}!</h2>
+   </div>
+ </div><br><br><br>
+    {% if tsa_enabled %}
+     <script type="text/javascript">
+       setTimeout(function() {
+         window.location.href = "{% url 'verify_otp' %}";
+       }, 5000);
+     </script>
+    {% else %}
+      <script type="text/javascript">
+       setTimeout(function() {
+         window.location.href = "{% url 'connect' %}#myModal2";
+       }, 5000);
+     </script>
+    {% endif %}
+   <div class="container">
+	 <div class="section">
+	 </div>
+   </div><br><br>
+ {% endblock %}

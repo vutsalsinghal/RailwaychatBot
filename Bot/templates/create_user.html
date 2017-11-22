@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title_html %}
+ RailwayBot | Register
+{% endblock %}
+
+{% block h1 %}
+  Create User
+{% endblock %}
+
+ {% block article_content %}
+ <div class=section>
+   <div class="container">
+     <form method="POST" onSubmit="return pass_check();" class="font_roboto_mono">
+       {% csrf_token %}
+         <div class="row">
+           <div class="input-field col l6 m6 s12">
+             <i class="material-icons prefix">account_circle</i>
+             <input placeholder="User name must be unique" id="User Name" type="text" name="name">
+             <label for="User Name">User Name</label>
+             {% if form.errors %}
+               <span style="color:#ff0000">{{ form.name.errors }}</span>
+             {% endif %}
+           </div>
+
+           <div class="input-field col l6 m6 s12">
+             <i class="material-icons prefix">email</i>
+             <input placeholder="Enter verifiable email address" id="Email" type="text" name="email">
+             <label class="active" for="Email">Email</label>
+             {% if form.errors %}
+               <span style="color:#ff0000">{{ form.email.errors }}</span>
+             {% endif %}
+           </div>
+         </div>
+
+         <div class="row">
+           <div class="input-field col l6 m6 s12">
+             <i class="material-icons prefix">lock</i>
+             <input placeholder="Atleast 10 character long" id="Password" type="password" name="password">
+             <label for="Password">Password</label>
+             <p style="color:#ff0000" id="password_error"></p>
+             {% if form.errors %}
+               <span style="color:#ff0000">{{ form.password.errors }}</span>
+             {% endif %}
+           </div>
+
+           <div class="input-field col l6 m6 s12">
+             <i class="material-icons prefix">lock_outline</i>
+             <input placeholder="Confirm password" id="Password re" type="password" name="password_bis">
+             <label for="Password re">Password Re-enter</label>
+             {% if form.errors %}
+               <span style="color:#ff0000">{{ form.password_bis.errors }}</span>
+             {% endif %}
+           </div>
+         </div>
+        {% if form.errors %}
+          {% for error in form.non_field_errors %}
+              <span style="color:#ff0000">{{ error }}</span>
+          {% endfor %}
+        {% endif %}
+         <br><br>
+         <button class="btn waves-effect waves-light amber" type="submit" name="action">Create<i class="material-icons right">sends</i></button>
+     </form>
+   </div>
+ </div>
+ <script type="text/javascript">
+ function pass_check(){
+  var pass=document.getElementById('Password');
+  if (pass.value.length < 10){
+    var p=document.getElementById('password_error');
+    p.innerHTML="Passowrd Is Too Short! Atleast 10 Characters";
+    return false;
+  }
+  else
+    return true;
+  }
+ </script>
+ {% endblock %}

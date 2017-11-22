@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block article_content %}
+<div class=section>
+   <div class="container">
+     <br>
+     <h2>You are not connected.</h2>
+     <br><br>
+     <script type="text/javascript">
+       setTimeout(function() {
+         window.location.href = "{% url 'index' %}";
+       }, 2000);
+     </script>
+     <br><br><br><br>
+   </div>
+</div>
+{% endblock %}

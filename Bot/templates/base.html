@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name='mobile-web-app-capable' content='yes'>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no"/>
+	<title>{% block title_html %}{% endblock %}</title>
+	{% load staticfiles %}
+	<link rel="icon" href="/static/python.ico">
+	<link href="{% static 'css/materialize.min.css' %}" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    {% block header %}
+    {% endblock %}
+
+	<style>
+		 html{
+			font-family: Ubuntu;
+		 }
+
+		 @font-face {
+			 font-family: 'Ubuntu';
+			 src: url({% static 'fonts/ubuntu/Ubuntu-L.ttf' %});
+		 }
+
+		 @font-face {
+			 font-family: 'Roboto Mono';
+			 src: url({% static 'fonts/roboto_mono/RobotoMono-Regular.ttf' %});
+			}
+
+		 @font-face {
+			 font-family: 'Open Sans';
+			 src: url({% static 'fonts/open-sans/OpenSans-Regular.ttf' %});
+			}
+
+		 .font_open_sans
+		 {
+			font-family: Open Sans;
+		 }
+
+		 .font_ubuntu
+		 {
+			font-family: Ubuntu;
+		 }
+
+		 .font_roboto_mono
+		 {
+			font-family: Roboto Mono;
+		 }
+
+		 .icon-block {
+			 padding: 0 15px;
+			}
+
+		 .icon-block .material-icons {
+		 font-size: inherit;
+		 }
+
+		 @font-face {
+			font-family: 'Material Icons';
+			font-style: normal;
+			font-weight: 400;
+			src: local('Material Icons'), local('MaterialIcons-Regular'), url({% static "fonts/material.woff2" %}) format('woff2');
+		 }
+
+		 @media (max-width: 1280px)
+     {
+      #footer-down
+      {
+        min-height:350px;
+      }
+     }
+
+     @media (max-width: 1960px)
+     {
+      #footer-down
+      {
+        min-height:670px;
+      }
+     }
+
+     @media only screen and (max-device-width: 480px)
+     {
+      #footer-down
+      {
+        min-height:180px;
+      }
+     }
+
+		{% block page_css %}
+		{% endblock %}
+
+		.nav_mod {
+        background:url("{% static 'python_pattern.svg' %}") repeat center center;
+      	}
+	</style>
+</head>
+<body>
+	<!--Nav starts-->
+	<nav class='nav_mod' role="navigation">
+    <div class="nav-wrapper container"><a id="logo-container" href="/" class="brand-logo" title="Stormy Developers"><img src='/static/python_logo_mod.png' style='width:1.2em; height:1.2em'></a>
+      <ul class="right hide-on-med-and-down">
+        <li><a href='{% url "chat" %}'>CHAT</a></li>
+        <li><a class="dropdown-button" data-beloworigin="true" data-constrainwidth="false" data-alignment="right" data-outduration="500" data-hover="true" data-activates="dropdown1">MENU<i class="material-icons right">arrow_drop_down</i></a></li>
+      </ul>
+    <!-- Dropdown Structure -->
+    <ul id="dropdown1" class="dropdown-content">
+      {% if user.is_authenticated %}
+		<li class="waves-effect"><a href="{% url 'logout' %}">LOGOUT</a></li>
+        {% if user.is_superuser %}
+          <li class="divider"></li>
+          <li class="waves-effect"><a href="/admin" target="_blank">ADMIN</a></li>
+        {% endif %}
+      {% else %}
+        <li class="waves-effect"><a href="{% url 'connect' %}">LOGIN</a></li>
+        <li class="waves-effect"><a href="{% url 'create_user' %}">REGISTER</a></li>
+        <li class="waves-effect"><a href="{% url 'chat' %}">CHAT</a></li>
+      {% endif %}
+    </ul>
+    <!--Mobile Demo-->
+      <ul id="nav-mobile" class="side-nav">
+        {% if user.is_authenticated %}
+		  <li><a class="waves-effect" href="{% url 'logout' %}">LOGOUT</a></li>
+          {% if user.is_superuser %}
+            <li class="divider"></li>
+             <li><a class="waves-effect waves-green" href="/admin" target="_blank">ADMIN</a></li>
+          {% endif %}
+        {% else %}
+          <li><a class="waves-effect" href="{% url 'connect' %}">LOGIN</a></li>
+          <li><a class="waves-effect" href="{% url 'create_user' %}">REGISTER</a></li>
+          <li><a class="waves-effect" href="{% url 'chat' %}">CHAT</a></li>
+        {% endif %}
+      </ul>
+      <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
+    </div>
+  </nav>
+ <!--Nav ends-->
+
+	<!-- Feature List (#myModal3) -->
+		<div class="modal flow-text" id="myModal3" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title text-center" style='color:#2bbbad' id="myModalLabel">FEATURE LIST</h4>
+					</div>
+					<hr>
+					<div class="modal-body">
+						Random Text
+					</div>
+				</div>
+			</div>
+		</div>
+
+	<h4 class="header center amber-text">{% block h1 %}{% endblock %}</h4>
+	<div id="footer-down">
+		{% block article_content %}
+		{% endblock %}
+	</div>
+
+<!--Footer-->
+	<footer class="page-footer red darken-4">
+		<div class="container">
+			<div class="row">
+				<div class="col l6 m6 s12">
+					<h5 class="white-text">Stormy Developers<sub><img src='/static/Stormy_white_3.png'></sub></h5>
+					<p class="grey-text text-lighten-4">We are a team of passionate software developers.</p>
+				</div>
+				<div class="col l3 m3 s12">
+					<h5 class="white-text">Contact Us</h5>
+					<p class="white-text">For any suggestion or queries, you can drop a message <span style='color:#fff; background:#004400'><a href="{% url 'suggestion' %}" class="white-text">here</a></span>.</p><span style='color:#fff; background:#004400'><a href='{% url "privacypolicy" %}' class='white-text'>Privacy Policy</a></span>
+				</div>
+				<div class="col l2 offset-l1 m3 s12 center">
+					<br>
+					<img class='card' src='/static/images/python_logo.png' />
+				</div>
+			</div>
+		</div>
+
+		<div class="footer-copyright">
+			<div class="container">
+				<div class="row">
+					<div class="col s12 m12 l10">
+						Proudly hosted on <a class="orange-text text-lighten-3" href="http://pythonanywhere.com">Pythonanywhere</a> and made with <i class="material-icons">favorite</i> by <a class="orange-text text-lighten-3" href="http://materializecss.com">MaterializeCss</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+<!--End Footer-->
+
+	<!--  Scripts-->
+	<script src="{% static 'javascript/jquery.min.js' %}"></script>
+	<script src="{% static 'javascript/materialize.min.js' %}"></script>
+	<script src="{% static 'javascript/init.js' %}"></script>
+	<script>
+	 {% block load_js %}
+	 {% endblock %}
+	</script>
+	<script>
+	 $(document).ready(function() {
+	 $('.modal-trigger').leanModal();
+	 });
+	</script>
+	</body>
+</html>
+
