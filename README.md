@@ -19,4 +19,4 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-That's it! Now browse to http://localhost:8000 in any browser.# RailwayChat Bot (https://www.pythonanywhere.com).
+That's it! Now browse to http://localhost:8000 in any browser.
