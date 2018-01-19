@@ -47,6 +47,9 @@ def page(request):
 				return False
 			elif trainreq['response_code'] == 200:
 				return True
+		else:
+			d['speech'] = d['displayText'] = 'No response code!'
+			return False
 
 	if req['result']['action'] == 'train.help':
 		if req['result']['metadata']['intentName'] == 'train_help':
@@ -171,7 +174,7 @@ def page(request):
 			return JsonResponse(d)
 
 	elif req['result']['metadata']['intentName'] == 'agent_feedback':
-		send_mail('New suggestion on railwaybot.pythonanywhere.com via chatbot', 'Suggestion: ' + req['result']['resolvedQuery'], '', ['your email address'])
+		send_mail('New suggestion on railwaybot.pythonanywhere.com via chatbot', 'Suggestion: ' + req['result']['resolvedQuery'], '', ['pyofey.pythonanywhere@gmail.com'])
 		d = {
 			"speech": 'Thank you for your valuable feedback!',
 			"displayText": 'Thank you for your valuable feedback!',
@@ -181,6 +184,25 @@ def page(request):
 		return JsonResponse(d)
 
 	elif req['result']['metadata']['intentName'] == 'train_info':
+
+		retString = 'Some error occured. Maybe try again with different phrase or sentence structure.'
+		d = {
+			"speech": retString,
+			"displayText": retString,
+			"data": {},
+			"contextOut": [],
+			"source": "railwaybot.pythonanywhere.com"}
+
+		date = req['result']['parameters']['date']
+
+		if date == '':
+			date = dt.datetime.strptime(req['timestamp'],"%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone('UTC')).astimezone(timezone('Asia/Calcutta'))
+		elif date.split('-')[0] == 'UUUU':
+			date = date.replace('UUUU', req['timestamp'].split('-')[0])
+			date = dt.datetime.strptime(date,"%Y-%m-%d").replace(tzinfo=timezone('UTC')).astimezone(timezone('Asia/Calcutta'))
+		else:
+			date = dt.datetime.strptime(date,"%Y-%m-%d").replace(tzinfo=timezone('UTC')).astimezone(timezone('Asia/Calcutta'))
+		'''
 		stationNames          = req['result']['parameters']['station-name']
 		stationAutoComplete   = req['result']['parameters']['autocomplete-station']
 		incompleteStationName = req['result']['parameters']['incomplete-station-name']
@@ -192,24 +214,10 @@ def page(request):
 		trainName             = req['result']['parameters']['train-name']
 		trainRoute            = req['result']['parameters']['train-route']
 		date                  = req['result']['parameters']['date']
+		'''
+		if req['result']['parameters']['station-name'] != []:
+			stationNames = req['result']['parameters']['station-name']
 
-		if date == '':
-			date = dt.datetime.strptime(req['timestamp'],"%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone('UTC')).astimezone(timezone('Asia/Calcutta'))
-		elif date.split('-')[0] == 'UUUU':
-			date = date.replace('UUUU', req['timestamp'].split('-')[0])
-			date = dt.datetime.strptime(date,"%Y-%m-%d").replace(tzinfo=timezone('UTC')).astimezone(timezone('Asia/Calcutta'))
-		else:
-			date = dt.datetime.strptime(date,"%Y-%m-%d").replace(tzinfo=timezone('UTC')).astimezone(timezone('Asia/Calcutta'))
-
-		retString = 'Some error occured. Maybe try again with different phrase or sentence structure.'
-		d = {
-			"speech": retString,
-			"displayText": retString,
-			"data": {},
-			"contextOut": [],
-			"source": "railwaybot.pythonanywhere.com"}
-
-		if stationNames != []:
 			trainDate = "{0:0=2d}".format(date.day) + "-{0:0=2d}".format(date.month) + "-{0:0=4d}".format(date.year)
 			url       = 'http://api.railwayapi.com/v2/between/source/' + stationNames[0] + '/dest/' + stationNames[1] + '/date/' + trainDate + '/apikey/KEY/'
 			trainreq  = requests.get(url).json()
@@ -226,7 +234,10 @@ def page(request):
 			else:
 				return JsonResponse(d)
 
-		elif pnr == 'true':
+		elif req['result']['parameters']['pnr'] == 'true':
+			#pnr       = req['result']['parameters']['pnr']
+			pnrNumber = req['result']['parameters']['phone-number']
+
 			url      = 'http://api.railwayapi.com/v2/pnr-status/pnr/' + str(pnrNumber) +'/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
@@ -240,22 +251,29 @@ def page(request):
 			else:
 				return JsonResponse(d)
 
-		elif liveStatus == 'true':
+		elif req['result']['parameters']['live-status'] == 'true':
+			trainName = req['result']['parameters']['train-name']
+
 			trainDate = "{0:0=2d}".format(date.day) + "-{0:0=2d}".format(date.month) + "-{0:0=4d}".format(date.year)
 			#url      = 'http://api.railwayapi.com/live/train/' + trainName + '/doj/' + "{0:0=4d}".format(date.year) + "{0:0=2d}".format(date.month) + "{0:0=2d}".format(date.day) + '/apikey/KEY/'
-			url      = 'http://api.railwayapi.com/v2/live/train/' + trainName + '/date/' + trainDate + '/apikey/KEY/'
+			url      = 'https://api.railwayapi.com/v2/live/train/' + trainName + '/date/' + trainDate + '/apikey/KEY/'
+			#d['speech'] = d['displayText'] = url
+			#return JsonResponse(d)
+
 			trainreq = requests.get(url).json()
 
 			if try_error(trainreq):
-				retString = "(" + date.strftime("%d %B %Y") + ") \nTrain no.:" + trainreq['train_number'] + '\nSrc station: ' + trainreq['route'][0]['station_']['name'] + '\nDst station: ' + trainreq['route'][-1]['station_']['name'] + '\nPosition: ' + trainreq['position']
+				#retString = "(" + date.strftime("%d %B %Y") + ") \nTrain no.:" + trainreq['train_number'] + '\nSrc station: ' + trainreq['route'][0]['station_']['name'] + '\nDst station: ' + trainreq['route'][-1]['station_']['name'] + '\nPosition: ' + trainreq['position']
+				retString = "(" + date.strftime("%d %B %Y") + ") \nTrain no.:" + trainreq['train_number'] + '\nPosition: ' + trainreq['position']
 
 				d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
 			else:
 				return JsonResponse(d)
 
-		elif cancelledTrains == 'true':
-			url      = 'http://api.railwayapi.com/v2/cancelled/date/' + "{0:0=2d}".format(date.day) + '-' + "{0:0=2d}".format(date.month) + '-' + "{0:0=4d}".format(date.year) + '/apikey/KEY/'
+		elif req['result']['parameters']['cancelled-trains'] == 'true':
+			#cancelledTrains = req['result']['parameters']['cancelled-trains']
+			url      = 'https://api.railwayapi.com/v2/cancelled/date/' + "{0:0=2d}".format(date.day) + '-' + "{0:0=2d}".format(date.month) + '-' + "{0:0=4d}".format(date.year) + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
 			if try_error(trainreq):
@@ -268,7 +286,8 @@ def page(request):
 			else:
 				return JsonResponse(d)
 
-		elif rescheduledTrains == 'true':
+		elif req['result']['parameters']['rescheduled-trains'] == 'true':
+			#rescheduledTrains = req['result']['parameters']['rescheduled-trains']
 			url      = 'http://api.railwayapi.com/v2/rescheduled/date/' + "{0:0=2d}".format(date.day) + '-' + "{0:0=2d}".format(date.month) + '-' + "{0:0=4d}".format(date.year) + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
@@ -282,21 +301,9 @@ def page(request):
 			else:
 				return JsonResponse(d)
 
-		elif stationAutoComplete == 'true':
-			url      = 'http://api.railwayapi.com/v2/suggest-station/name/' + incompleteStationName.replace(' ','') + '/apikey/KEY/'
-			trainreq = requests.get(url).json()
+		elif req['result']['parameters']['train-route'] == 'true':
+			trainName             = req['result']['parameters']['train-name']
 
-			if try_error(trainreq):
-				retString = ""
-				for i in range(trainreq['total']):
-					retString += str(i+1) + '. ' + trainreq['station'][i]['name'] + ' (' + trainreq['station'][i]['code'] + ')\n '
-
-				d['speech'] = d['displayText'] = retString
-				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
-
-		elif trainRoute == 'true':
 			url      = 'http://api.railwayapi.com/v2/route/train/' + trainName + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
@@ -312,6 +319,20 @@ def page(request):
 				retString += '\n\nRoute: \n'
 				for i in range(len(trainreq['route'])):
 					retString += str(i+1) + '. ' + trainreq['route'][i]['station']['name'] + '(' + trainreq['route'][i]['station']['code'] + ')\nOn day: ' + str(trainreq['route'][i]['day']) + '\nSchArr: ' + trainreq['route'][i]['scharr'] + '\nSchDep: ' + trainreq['route'][i]['schdep']  + '\n\n'
+
+				d['speech'] = d['displayText'] = retString
+				return JsonResponse(d)
+			else:
+				return JsonResponse(d)
+'''
+		elif stationAutoComplete == 'true':
+			url      = 'http://api.railwayapi.com/v2/suggest-station/name/' + incompleteStationName.replace(' ','') + '/apikey/KEY/'
+			trainreq = requests.get(url).json()
+
+			if try_error(trainreq):
+				retString = ""
+				for i in range(trainreq['total']):
+					retString += str(i+1) + '. ' + trainreq['station'][i]['name'] + ' (' + trainreq['station'][i]['code'] + ')\n '
 
 				d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
@@ -426,3 +447,4 @@ def page(request):
 				return JsonResponse(d)
 			else:
 				return JsonResponse(d)
+'''
