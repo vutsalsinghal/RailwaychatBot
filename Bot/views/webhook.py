@@ -10,46 +10,45 @@ from django.core.mail import send_mail
 def page(request):
 	req = json.loads(str(request.body, 'utf-8'))
 
-	def try_error(trainreq):
-		if 'response_code' in trainreq:
-			if trainreq['response_code'] == 204:
-				d['speech'] = d['displayText'] = 'Not able to fetch required data or there is no data for your query!'
-				return False
-			elif trainreq['response_code'] == 210:
-				d['speech'] = d['displayText'] = "Train doesn’t run on the date queried!"
-				return False
-			elif trainreq['response_code'] == 220:
-				d['speech'] = d['displayText'] = 'Flushed PNR!'
-				return False
-			elif trainreq['response_code'] == 221:
-				d['speech'] = d['displayText'] = 'Invalid PNR supplied!'
-				return False
-			elif trainreq['response_code'] == 304:
-				d['speech'] = d['displayText'] = 'Data couldn’t be fetched. No data available for the given query!'
-				return False
-			elif trainreq['response_code'] == 403:
-				d['speech'] = d['displayText'] = 'Usage Quota for the day exhausted. Sorry for the inconvenience! Please try again after 12AM (IST)'
-				return False
-			elif trainreq['response_code'] == 404:
-				d['speech'] = d['displayText'] = "Sorry, Doesn't Exist! :/"
-				return False
-			elif trainreq['response_code'] == 500:
-				d['speech'] = d['displayText'] = 'Sorry! Unable to process request at this time! Railway API Error Code: 500'
-				return False
-			elif trainreq['response_code'] == 504:
-				d['speech'] = d['displayText'] = 'Argument error!'
-				return False
-			elif trainreq['response_code'] == 510:
-				d['speech'] = d['displayText'] = 'Train not scheduled to run on the given date.'
-				return False
-			elif trainreq['response_code'] == 704:
-				d['speech'] = d['displayText'] = 'Sorry! unable to complete request at the moment. Please try after 12 AM IST.'
-				return False
-			elif trainreq['response_code'] == 200:
-				return True
-		else:
-			d['speech'] = d['displayText'] = 'No response code!'
+	def try_error(code):
+		if code == 204:
+			d['speech'] = d['displayText'] = 'Not able to fetch required data or there is no data for your query!'
 			return False
+		elif code == 210:
+			d['speech'] = d['displayText'] = "Train doesn’t run on the date queried!"
+			return False
+		elif code == 220:
+			d['speech'] = d['displayText'] = 'Flushed PNR!'
+			return False
+		elif code == 221:
+			d['speech'] = d['displayText'] = 'Invalid PNR supplied!'
+			return False
+		elif code == 304:
+			d['speech'] = d['displayText'] = 'Data couldn’t be fetched. No data available for the given query!'
+			return False
+		elif code == 403:
+			d['speech'] = d['displayText'] = 'Usage Quota for the day exhausted. Sorry for the inconvenience! Please try again after 12AM (IST)'
+			return False
+		elif code == 404:
+			d['speech'] = d['displayText'] = "Sorry, Doesn't Exist! :/"
+			return False
+		elif code == 405:
+			d['speech'] = d['displayText'] = "Data couldn’t be loaded! Request didn't go through."
+			return False
+		elif code == 500:
+			d['speech'] = d['displayText'] = 'Sorry! Unable to process request at this time! Railway API Error Code: 500'
+			return False
+		elif code == 504:
+			d['speech'] = d['displayText'] = 'Argument error!'
+			return False
+		elif code == 510:
+			d['speech'] = d['displayText'] = 'Train not scheduled to run on the given date.'
+			return False
+		elif code == 704:
+			d['speech'] = d['displayText'] = 'Sorry! unable to complete request at the moment. Please try after 12 AM IST.'
+			return False
+		elif code == 200:
+			return True
 
 	if req['result']['action'] == 'train.help':
 		if req['result']['metadata']['intentName'] == 'train_help':
@@ -222,84 +221,76 @@ def page(request):
 			url       = 'http://api.railwayapi.com/v2/between/source/' + stationNames[0] + '/dest/' + stationNames[1] + '/date/' + trainDate + '/apikey/KEY/'
 			trainreq  = requests.get(url).json()
 
-			if try_error(trainreq):
-				retString = "(" + date.strftime("%d %B %Y") + ")\n"
-				if trainreq['total'] != 0:
-					for i in range(trainreq['total']):
-						retString += str(i+1) + '. ' + trainreq['train'][i]['name'] + '(' + trainreq['train'][i]['number'] + ')\n Travel time: ' + trainreq['train'][i]['travel_time'] + '\nScr departure time: ' + trainreq['train'][i]['src_departure_time'] + '\nDst arrival time: ' + trainreq['train'][i]['dest_arrival_time'] + '\n\n'
-				else:
-					retString += 'No trains on the above date!'
-				d['speech'] = d['displayText'] = retString
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = "(" + date.strftime("%d %B %Y") + ")\n"
+					if trainreq['total'] != 0:
+						for i in range(trainreq['total']):
+							retString += str(i+1) + '. ' + trainreq['trains'][i]['name'] + '(' + trainreq['trains'][i]['number'] + ')\n Travel time: ' + trainreq['trains'][i]['travel_time'] + '\nScr departure time: ' + trainreq['trains'][i]['src_departure_time'] + '\nDst arrival time: ' + trainreq['trains'][i]['dest_arrival_time'] + '\n\n'
+					else:
+						retString += 'No trains on the above date!'
+					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
+			return JsonResponse(d)
 
 		elif req['result']['parameters']['pnr'] == 'true':
 			#pnr       = req['result']['parameters']['pnr']
 			pnrNumber = req['result']['parameters']['phone-number']
-
 			url      = 'http://api.railwayapi.com/v2/pnr-status/pnr/' + str(pnrNumber) +'/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
-			if try_error(trainreq):
-				retString = "(" + date.strftime("%d %B %Y") + ") " + '\nTrain Name: ' + trainreq['train_name'] + '(' + trainreq['train_num'] + ')\nDOJ: ' + trainreq['doj'] + '\nChart Prepared: ' + trainreq['chart_prepared'] + '\nClass: ' + trainreq['class'] +'\nFrom station: ' + trainreq['from_station']['name'] + '(' + trainreq['from_station']['code'] + ')' + '\nTo station: ' + trainreq['to_station']['name'] + '(' + trainreq['to_station']['code'] + ')' + '\nBoarding point: ' + trainreq['boarding_point']['name'] + '(' + trainreq['boarding_point']['code'] + ')' + '\n Reservation upto: ' + trainreq['reservation_upto']['name'] + '(' + trainreq['reservation_upto']['code'] + ')\n\n'
-				for i in range(trainreq['total_passengers']):
-					retString += 'Passenger no.' + str(i+1) + ' Details:\nCurrent Status: ' + trainreq['passengers'][i]['current_status'] + '\nCoach Position: ' + str(trainreq['passengers'][i]['coach_position']) + '\n\n'
-
-				d['speech'] = d['displayText'] = retString
-				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = "(" + date.strftime("%d %B %Y") + ") " + '\nTrain Name: ' + trainreq['train']['name'] + '(' + trainreq['train']['number'] + ')\nDOJ: ' + trainreq['doj'] + '\nChart Prepared: ' + str(trainreq['chart_prepared']) +'\nFrom station: ' + trainreq['from_station']['name'] + '(' + trainreq['from_station']['code'] + ')' + '\nTo station: ' + trainreq['to_station']['name'] + '(' + trainreq['to_station']['code'] + ')' + '\n\n'
+					for i in range(trainreq['total_passengers']):
+						retString += 'Passenger no.' + str(i+1) + '\nCurrent Status: ' + trainreq['passengers'][i]['current_status'] + '\nBooking Status: ' + trainreq['passengers'][i]['booking_status'] + '\n\n'
+					d['speech'] = d['displayText'] = retString
+				return JsonResponse(d)			
+			return JsonResponse(d)
 
 		elif req['result']['parameters']['live-status'] == 'true':
 			trainName = req['result']['parameters']['train-name']
 
 			trainDate = "{0:0=2d}".format(date.day) + "-{0:0=2d}".format(date.month) + "-{0:0=4d}".format(date.year)
-			#url      = 'http://api.railwayapi.com/live/train/' + trainName + '/doj/' + "{0:0=4d}".format(date.year) + "{0:0=2d}".format(date.month) + "{0:0=2d}".format(date.day) + '/apikey/KEY/'
 			url      = 'https://api.railwayapi.com/v2/live/train/' + trainName + '/date/' + trainDate + '/apikey/KEY/'
-			#d['speech'] = d['displayText'] = url
+			trainreq = requests.get(url).json()
+			#d['speech'] = d['displayText'] = trainreq['position']
 			#return JsonResponse(d)
 
-			trainreq = requests.get(url).json()
-
-			if try_error(trainreq):
-				#retString = "(" + date.strftime("%d %B %Y") + ") \nTrain no.:" + trainreq['train_number'] + '\nSrc station: ' + trainreq['route'][0]['station_']['name'] + '\nDst station: ' + trainreq['route'][-1]['station_']['name'] + '\nPosition: ' + trainreq['position']
-				retString = "(" + date.strftime("%d %B %Y") + ") \nTrain no.:" + trainreq['train_number'] + '\nPosition: ' + trainreq['position']
-
-				d['speech'] = d['displayText'] = retString
-				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = "(" + date.strftime("%d %B %Y") + ") \nTrain name: " + trainreq['train']['name'] + '\nPosition: ' + trainreq['position']
+					d['speech'] = d['displayText'] = retString
+					return JsonResponse(d)
+			return JsonResponse(d)
 
 		elif req['result']['parameters']['cancelled-trains'] == 'true':
 			#cancelledTrains = req['result']['parameters']['cancelled-trains']
 			url      = 'https://api.railwayapi.com/v2/cancelled/date/' + "{0:0=2d}".format(date.day) + '-' + "{0:0=2d}".format(date.month) + '-' + "{0:0=4d}".format(date.year) + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
-			if try_error(trainreq):
-				retString = "(" + date.strftime("%d %B %Y") + ")\n "
-				for i in range(len(trainreq['trains'])):
-					retString += str(i+1) + '. ' + trainreq['trains'][i]['train']['name'] + ' (Tr.no: ' + trainreq['trains'][i]['train']['number'] + ')\n '
-
-				d['speech'] = d['displayText'] = retString
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = "(" + date.strftime("%d %B %Y") + ")\n "
+					for i in range(len(trainreq['trains'])):
+						retString += str(i+1) + '. ' + trainreq['trains'][i]['name'] + ' (Tr.no: ' + trainreq['trains'][i]['number'] + ')\n '
+					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
+			return JsonResponse(d)
 
 		elif req['result']['parameters']['rescheduled-trains'] == 'true':
 			#rescheduledTrains = req['result']['parameters']['rescheduled-trains']
 			url      = 'http://api.railwayapi.com/v2/rescheduled/date/' + "{0:0=2d}".format(date.day) + '-' + "{0:0=2d}".format(date.month) + '-' + "{0:0=4d}".format(date.year) + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
-			if try_error(trainreq):
-				retString = "(" + date.strftime("%d %B %Y") + ")\n "
-				for i in range(len(trainreq['trains'])):
-					retString += str(i+1) + '. ' + trainreq['trains'][i]['name'] + '(' + trainreq['trains'][i]['number'] + ')\nRsch date: ' + trainreq['trains'][i]['rescheduled_date'] + '\nRsch time: ' + trainreq['trains'][i]['rescheduled_time'] + '\n\n'
-
-				d['speech'] = d['displayText'] = retString
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = "(" + date.strftime("%d %B %Y") + ")\n "
+					for i in range(len(trainreq['trains'])):
+						retString += str(i+1) + '. ' + trainreq['trains'][i]['name'] + '(' + trainreq['trains'][i]['number'] + ')\nRsch date: ' + trainreq['trains'][i]['rescheduled_date'] + '\nRsch time: ' + trainreq['trains'][i]['rescheduled_time'] + '\n\n'
+					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
+			return JsonResponse(d)
 
 		elif req['result']['parameters']['train-route'] == 'true':
 			trainName             = req['result']['parameters']['train-name']
@@ -307,23 +298,23 @@ def page(request):
 			url      = 'http://api.railwayapi.com/v2/route/train/' + trainName + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
-			if try_error(trainreq):
-				retString = "(" + date.strftime("%d %B %Y") + ")\nName: " + trainreq['train']['name'] + " (" + trainreq['train']['number'] + ")" + "\nRuns on: "
-				for i in range(len(trainreq['train']['days'])):
-					if trainreq['train']['days'][i]['runs'] == 'Y':
-						retString += trainreq['train']['days'][i]['code'] + ', '
-				retString += '\nAvailable Classes: '
-				for i in range(len(trainreq['train']['classes'])):
-					if trainreq['train']['classes'][i]['available'] == 'Y':
-						retString += trainreq['train']['classes'][i]['class-code'] + ', '
-				retString += '\n\nRoute: \n'
-				for i in range(len(trainreq['route'])):
-					retString += str(i+1) + '. ' + trainreq['route'][i]['station']['name'] + '(' + trainreq['route'][i]['station']['code'] + ')\nOn day: ' + str(trainreq['route'][i]['day']) + '\nSchArr: ' + trainreq['route'][i]['scharr'] + '\nSchDep: ' + trainreq['route'][i]['schdep']  + '\n\n'
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = "(" + date.strftime("%d %B %Y") + ")\nName: " + trainreq['train']['name'] + " (" + trainreq['train']['number'] + ")" + "\nRuns on: "
+					for i in range(len(trainreq['train']['days'])):
+						if trainreq['train']['days'][i]['runs'] == 'Y':
+							retString += trainreq['train']['days'][i]['code'] + ', '
+					retString += '\nAvailable Classes: '
+					for i in range(len(trainreq['train']['classes'])):
+						if trainreq['train']['classes'][i]['available'] == 'Y':
+							retString += trainreq['train']['classes'][i]['code'] + ', '
+					retString += '\n\nRoute: \n'
+					for i in range(len(trainreq['route'])):
+						retString += str(i+1) + '. ' + trainreq['route'][i]['station']['name'] + '(' + trainreq['route'][i]['station']['code'] + ')\nOn day: ' + str(trainreq['route'][i]['day']) + '\nSchArr: ' + trainreq['route'][i]['scharr'] + '\nSchDep: ' + trainreq['route'][i]['schdep']  + '\n\n'
 
-				d['speech'] = d['displayText'] = retString
+					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
+			return JsonResponse(d)
 '''
 		elif stationAutoComplete == 'true':
 			url      = 'http://api.railwayapi.com/v2/suggest-station/name/' + incompleteStationName.replace(' ','') + '/apikey/KEY/'
