@@ -329,6 +329,20 @@ def page(request):
 					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
 			return JsonResponse(d)
+		
+		elif req['result']['parameters']['autocomplete-train'] == 'true':
+			incompleteTrainName = req['result']['parameters']['incomplete-train-name']
+			url      = 'http://api.railwayapi.com/v2/suggest-train/train/' + incompleteTrainName.replace(' ','') + '/apikey/KEY/'
+			trainreq = requests.get(url).json()
+
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = ""
+					for i in range(len(trainreq['trains'])):
+						retString += str(i+1) + '. ' + trainreq['trains'][i]['name'] + ' (' + trainreq['trains'][i]['number'] + ')\n '
+					d['speech'] = d['displayText'] = retString
+				return JsonResponse(d)
+			return JsonResponse(d)
 '''
 	elif req['result']['metadata']['intentName'] == 'train_seat_availability':
 		retString = 'Some error occured. Maybe try again with different phrase or sentence structure.'
