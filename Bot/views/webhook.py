@@ -315,21 +315,21 @@ def page(request):
 					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
 			return JsonResponse(d)
-'''
-		elif stationAutoComplete == 'true':
+
+		elif req['result']['parameters']['autocomplete-station'] == 'true':
+			incompleteStationName = req['result']['parameters']['incomplete-station-name']
 			url      = 'http://api.railwayapi.com/v2/suggest-station/name/' + incompleteStationName.replace(' ','') + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
 
-			if try_error(trainreq):
-				retString = ""
-				for i in range(trainreq['total']):
-					retString += str(i+1) + '. ' + trainreq['station'][i]['name'] + ' (' + trainreq['station'][i]['code'] + ')\n '
-
-				d['speech'] = d['displayText'] = retString
+			if 'response_code' in trainreq:
+				if try_error(trainreq['response_code']):
+					retString = ""
+					for i in range(trainreq['total']):
+						retString += str(i+1) + '. ' + trainreq['stations'][i]['name'] + ' (' + trainreq['stations'][i]['code'] + ')\n '
+					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
-			else:
-				return JsonResponse(d)
-
+			return JsonResponse(d)
+'''
 	elif req['result']['metadata']['intentName'] == 'train_seat_availability':
 		retString = 'Some error occured. Maybe try again with different phrase or sentence structure.'
 		d = {
