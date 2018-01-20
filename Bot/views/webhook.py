@@ -52,7 +52,7 @@ def page(request):
 
 	if req['result']['action'] == 'train.help':
 		if req['result']['metadata']['intentName'] == 'train_help':
-			retString = 'What do you need help with?\n\n1. Live status\n2. Train Info & Route\n3. Trains between 2 stations\n4. PNR status\n5. Cancelled trains\n6. Station name auto-complete\n7. Rescheduled trains\n\nPick a number:' #8. Seat availability\n9. Train fare\n10. Trains arrival at a station\n\nPick a number:'
+			retString = 'What do you need help with?\n\n1. Live status\n2. Train Info & Route\n3. Trains between 2 stations\n4. PNR status\n5. Station name auto-complete\n6. Train name auto-complete\n7. Cancelled trains\n8. Rescheduled trains\n\nPick a number:' #8. Seat availability\n9. Train fare\n10. Trains arrival at a station\n\nPick a number:'
 			d = {
 				"speech": '',
 				"displayText": '',
@@ -89,21 +89,27 @@ def page(request):
 							"content_type":"text",
 							"title":"6",
 							"payload":"6"
-						  },{
+						  },
+						  {
 							"content_type":"text",
 							"title":"7",
 							"payload":"7"
+						  },
+						  {
+							"content_type":"text",
+							"title":"8",
+							"payload":"8"
 						  }
 						]
 					},
 					"telegram": {
-						"text": 'What do you need help with?\n\n1. Live status\n2. Train Info & Route\n3. Trains between 2 stations\n4. PNR status\n5. Cancelled trains\n6. Station name auto-complete\n7. Rescheduled trains\n\nPick a number:', #8. Seat availability\n9. Train fare\n10. Trains arrival at a station\n\nPick a number:',
+						"text": 'What do you need help with?\n\n1. Live status\n2. Train Info & Route\n3. Trains between 2 stations\n4. PNR status\n5. Station name auto-complete\n6. Train name auto-complete\n7.Cancelled trains\n8. Rescheduled trains\n\nPick a number:', #8. Seat availability\n9. Train fare\n10. Trains arrival at a station\n\nPick a number:',
 						'one_time_keyboard': 'true',
 						"reply_markup": {
 						  "keyboard": [
 								['1','2','3'],
 								['4','5','6'],
-								['7']
+								['7','8']
 							]
 						}
 					}
@@ -142,20 +148,25 @@ def page(request):
 				retString = 'To do PNR enquiry, some possible statements you can type/speak can be:\n\n #. PNR status of 1234567890\n #. PNR status 1234567890\n #. PNR 1234567890\n #. PNR number 1234567890\n #. PNR enquiry 1234567890\n\nThese are just sample statements!'
 				d['speech'] = d['displayText'] = retString
 
-			elif helpId == '5':
-				retString = 'To know List of cancelled trains, some possible statements you can type/speak can be:\n\n #. List of cancelled trains\n #. What are the cancelled train <today/tomorrow etc>\n\nThese are just sample statements!'
-				d['speech'] = d['displayText'] = retString
 
-			elif helpId == '6':
+			elif helpId == '5':
 				retString = 'To auto-complete a station name/code, some possible statements you can type/speak can be:\n\n #. auto complete station name <partial name>\n #. name of station with <partial name>\n #. suggest station name <partial name>\n #. possible station name <partial name>\n\nThese are just sample statements!\n\nNote: You\'ve to enter partial "station NAME" not "station CODE" such as DEL for DELHI'
 				d['speech'] = d['displayText'] = retString
 
+			elif helpId == '6':
+				retString = 'To auto-complete a train name/number, some possible statements you can type/speak can be:\n\n #. auto complete train name <partial name>\n #. name of train with <partial name>\n #. suggest train name <partial name>\n #. possible train name <partial name>\n\nThese are just sample statements!\n\nNote: You\'ve to enter partial "train NAME" not "train NUMBER" such as UTK for UTKAL EXPRESS'
+				d['speech'] = d['displayText'] = retString
+
 			elif helpId == '7':
+				retString = 'To know List of cancelled trains, some possible statements you can type/speak can be:\n\n #. List of cancelled trains\n #. What are the cancelled train <today/tomorrow etc>\n\nThese are just sample statements!'
+				d['speech'] = d['displayText'] = retString
+
+			elif helpId == '8':
 				retString = 'To know list of rescheduled trains, possible statements you can type/speak can be:\n\n #. List of  rescheduled trains\n #. What are the rescheduled train <today/tomorrow etc>\n\nThese are just sample statements!'
 				d['speech'] = d['displayText'] = retString
 
 			else:
-				retString = 'No no no! :D  Try again!\n\n #. Type/speak "help"\n #. Type/speak no. b/w 1 to 7'
+				retString = 'No no no! :D  Try again!\n\n #. Type/speak "help"\n #. Type/speak no. b/w 1 to 8'
 				d['speech'] = d['displayText'] = retString
 			'''
 			elif helpId == '8':
@@ -204,7 +215,9 @@ def page(request):
 		'''
 		stationNames          = req['result']['parameters']['station-name']
 		stationAutoComplete   = req['result']['parameters']['autocomplete-station']
-		incompleteStationName = req['result']['parameters']['incomplete-station-name']
+		trainNames            = req['result']['parameters']['station-name']
+		trainAutoComplete     = req['result']['parameters']['autocomplete-train']
+		incompleteStationName = req['result']['parameters']['incomplete-train-name']
 		pnr                   = req['result']['parameters']['pnr']
 		pnrNumber             = req['result']['parameters']['phone-number']
 		liveStatus            = req['result']['parameters']['live-status']
@@ -245,7 +258,7 @@ def page(request):
 					for i in range(trainreq['total_passengers']):
 						retString += 'Passenger no.' + str(i+1) + '\nCurrent Status: ' + trainreq['passengers'][i]['current_status'] + '\nBooking Status: ' + trainreq['passengers'][i]['booking_status'] + '\n\n'
 					d['speech'] = d['displayText'] = retString
-				return JsonResponse(d)			
+				return JsonResponse(d)
 			return JsonResponse(d)
 
 		elif req['result']['parameters']['live-status'] == 'true':
@@ -320,6 +333,8 @@ def page(request):
 			incompleteStationName = req['result']['parameters']['incomplete-station-name']
 			url      = 'http://api.railwayapi.com/v2/suggest-station/name/' + incompleteStationName.replace(' ','') + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
+			#d['speech'] = d['displayText'] = url
+			#return JsonResponse(d)
 
 			if 'response_code' in trainreq:
 				if try_error(trainreq['response_code']):
@@ -329,11 +344,13 @@ def page(request):
 					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
 			return JsonResponse(d)
-		
+
 		elif req['result']['parameters']['autocomplete-train'] == 'true':
 			incompleteTrainName = req['result']['parameters']['incomplete-train-name']
 			url      = 'http://api.railwayapi.com/v2/suggest-train/train/' + incompleteTrainName.replace(' ','') + '/apikey/KEY/'
 			trainreq = requests.get(url).json()
+			#d['speech'] = d['displayText'] = url
+			#return JsonResponse(d)
 
 			if 'response_code' in trainreq:
 				if try_error(trainreq['response_code']):
