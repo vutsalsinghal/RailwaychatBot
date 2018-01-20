@@ -324,7 +324,7 @@ def page(request):
 			if 'response_code' in trainreq:
 				if try_error(trainreq['response_code']):
 					retString = ""
-					for i in range(trainreq['total']):
+					for i in range(len(trainreq['stations'])):
 						retString += str(i+1) + '. ' + trainreq['stations'][i]['name'] + ' (' + trainreq['stations'][i]['code'] + ')\n '
 					d['speech'] = d['displayText'] = retString
 				return JsonResponse(d)
