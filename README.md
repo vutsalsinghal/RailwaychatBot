@@ -1,4 +1,4 @@
-# RailwayChat Bot (https://www.railwaybot.pythonanywhere.com)
+# RailwayChat [Bot](https://railwaybot.pythonanywhere.com)
 
 ## Overview
 It provides accurate real-time information about Indian Railway system.
